@@ -1,5 +1,5 @@
-# Section 5 — Three-Minute Product Pitch and Live Demo Script
 
+<<<<<<< HEAD
 **Project:** Emergency Ambulance Call Triage / Prioritization (KTAS-based)
 **Total runtime:** 3:00
 
@@ -94,3 +94,5 @@
 - If you're running the prediction live instead of just showing a recording, run
   `python scripts/predict_new_call.py` once before recording so you know what it'll print and how
   long it takes.
+=======
+>>>>>>> d767e971975b78edbfb70c72f0045513d29a4a6e
