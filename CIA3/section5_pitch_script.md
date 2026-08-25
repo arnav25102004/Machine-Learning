@@ -8,13 +8,14 @@
 ## 0:00–0:35 — Problem and beneficiaries (35s)
 
 **Spoken:**
-> "Imagine a dispatch center with three ambulances and five emergency calls ringing at once. The
-> dispatcher has no vitals monitor, no doctor on scene — often not even the patient on the line,
-> just a relative or a bystander describing what they see. Who gets the ambulance first? Get it
-> wrong, and someone who needed help immediately waits behind someone who didn't. We built a model
-> that gives each incoming call an independent urgency score — Critical, Urgent, or Non-urgent —
-> using only what's realistically knowable over a phone call, so dispatchers can rank simultaneous
-> calls and send limited ambulances where they're needed most first."
+> "Say a dispatch center has three ambulances, and five calls come in at the same time. The
+> dispatcher has no vitals monitor, no doctor standing there. A lot of the time it's not even the
+> patient on the phone — it's a family member or a stranger describing what they see. So who gets
+> the ambulance first? If you get that wrong, someone who needed help right away ends up waiting.
+> That's the problem we're solving. We built a model that gives every incoming call its own urgency
+> score — Critical, Urgent, or Non-urgent — using only what a dispatcher could actually know from a
+> phone call. That way they can rank calls coming in together and send ambulances to the worst
+> cases first."
 
 **On-screen elements:**
 - Title card: project name + "Health — Emergency Dispatch Triage"
@@ -26,17 +27,16 @@
 ## 0:35–1:15 — Data cleaning, EDA, feature engineering highlights (40s)
 
 **Spoken:**
-> "We used the KTAS dataset — real, anonymized emergency-department triage records from Korea,
-> 1,267 patient visits, each independently graded by clinical experts on a 5-level urgency scale,
-> which we collapsed to three classes matching a real dispatch decision: send now, queue, or defer.
-> The data had real problems — corrupted placeholder values in over half the pain-score column,
-> missing oxygen readings in more than half the rows — all documented and cleaned in the notebook.
-> But the key design decision was this: we split every feature into two groups — what a caller can
-> actually tell a dispatcher over the phone, like symptoms, pain level, consciousness, age — versus
-> what only a hospital device can measure, like blood pressure and heart rate. Our primary models
-> train on caller-obtainable data ONLY, to simulate the real information a dispatcher has. Vitals
-> are only used in a separate side-by-side comparison, to measure exactly what's lost by respecting
-> that real-world constraint."
+> "We used the KTAS dataset — real emergency-room triage records from Korea, about 1,267 patients,
+> each one graded by actual doctors on a 5-level urgency scale. We simplified that down to three
+> levels that match what a dispatcher actually decides: send help now, queue it, or it can wait.
+> The data wasn't clean — over half the pain-score entries were corrupted, and more than half the
+> oxygen readings were just missing. We found all that and fixed it in the notebook. But the real
+> decision we made was this: we split every column into two groups — stuff a caller can actually
+> tell you over the phone, like symptoms, pain, whether they're conscious, their age — versus stuff
+> only a hospital machine can measure, like blood pressure or heart rate. Our main models only get
+> trained on the phone-call stuff. The device readings are only used later, in a separate test, just
+> to see how much we're giving up by not having them."
 
 **On-screen elements:**
 - Notebook Section 2 scrolling: class-balance bar chart (`class_balance.png`)
@@ -48,15 +48,15 @@
 ## 1:15–2:10 — Baseline vs. bagging vs. boosting vs. stacking results (55s)
 
 **Spoken:**
-> "We trained four models on the caller-obtainable features: a Logistic Regression baseline, a
-> tuned Random Forest, a tuned LightGBM boosting model, and a stacking ensemble combining all
-> three with a meta-learner — trained with cross-validation so the meta-learner never sees data its
-> base models were trained on, avoiding leakage. On the held-out test set, the stacking ensemble
-> won, with an F1-macro of 0.72 versus 0.71 for the baseline — a real, if modest, gain, and
-> critically, it didn't sacrifice detection of critical cases to get there. We also ran the vitals
-> comparison: surprisingly, adding device vitals barely helped — and for two of four models it
-> actually hurt slightly, given our sample size. That's a genuinely useful finding: the
-> caller-obtainable-only design isn't leaving much on the table."
+> "We tried four models. First a simple Logistic Regression as our baseline. Then a Random Forest.
+> Then LightGBM, a boosting model. And finally we stacked all three together with a meta-learner on
+> top — basically a model that learns how to combine the other three. We made sure the meta-learner
+> never saw predictions from a model that was trained on the same data, so there's no cheating going
+> on there. On the test set, the stacked model won — 0.72 versus 0.71 for the baseline. Not a huge
+> jump, but a real one, and it didn't get worse at catching critical cases to achieve it. We also
+> checked what happens if we add the vitals back in — and honestly, it barely made a difference. For
+> two of the four models it actually got slightly worse. Which tells us the phone-call-only approach
+> isn't giving up as much as you'd think."
 
 **On-screen elements:**
 - `model_comparison_chart.png` — the F1/ROC-AUC bar chart across all four models
@@ -68,15 +68,16 @@
 ## 2:10–3:00 — Live prediction + SHAP explanation + ethics caveat (50s)
 
 **Spoken:**
-> "Here's the model in action on one realistic call: a 72-year-old, reported by a family member,
-> difficulty breathing, arriving by private ambulance, pain 8 out of 10, only responding to verbal
-> prompts. The model predicts Critical with 76% confidence. SHAP tells us why: the low mental-status
-> response and the respiratory complaint are the two biggest drivers — exactly what a trained
-> dispatcher would flag. But — and this matters — this model is decision support only. It's not
-> validated for real emergency use, it's trained on a relatively small Korean hospital dataset from
-> 2016 to 2017, and our own fairness audit found a real gap in how reliably it catches critical
-> cases across male versus female callers. A human dispatcher always makes the final call. This
-> is a proof of concept for the methodology, not a deployable system."
+> "Let's run it live on one example: a 72-year-old, a family member is calling it in, trouble
+> breathing, came by private ambulance, pain 8 out of 10, only reacting when someone talks to them.
+> The model says Critical, 76% confident. And we can actually see why — it's mostly picking up on
+> the fact that they're not fully responsive, plus the breathing problem. That's exactly what a real
+> dispatcher would key in on too. But — and this is important — this is decision support, not a
+> replacement for a dispatcher. It's not tested for real emergency use, it's trained on a fairly
+> small dataset from Korean hospitals a few years back, and when we checked, we actually found it
+> catches critical cases less reliably for male callers than female ones. So a real dispatcher still
+> makes the final call, always. This is a proof of concept, not something you'd plug into a real
+> dispatch center as-is."
 
 **On-screen elements:**
 - Terminal running `python scripts/predict_new_call.py` live, showing the predicted class + probabilities
@@ -87,10 +88,9 @@
 
 ## Production notes
 
-- Keep spoken pace brisk — total word count above is ~430 words, roughly matching a 3-minute
-  spoken pace (140–150 wpm).
-- All numbers quoted in the script are pulled directly from the executed notebook's real output
-  (see `README.md` results table) — do not substitute placeholder or rounded-differently numbers
-  when recording.
-- If recording live rather than narrating over screen capture, run
-  `python scripts/predict_new_call.py` once beforehand to confirm the exact console output timing.
+- Talk at a normal, brisk pace — the script is about 420 words, which fits 3 minutes comfortably.
+- Every number in this script comes straight from the notebook's actual output (also in
+  `README.md`) — don't round differently or swap in placeholder numbers when recording.
+- If you're running the prediction live instead of just showing a recording, run
+  `python scripts/predict_new_call.py` once before recording so you know what it'll print and how
+  long it takes.
